@@ -4,11 +4,30 @@ const colorDivs = document.querySelectorAll(".color");
 const generateBtn = document.querySelector(".generate");
 const sliders = document.querySelectorAll('input[type="range"]');
 const currentHex = document.querySelectorAll(".color h2");
+const popup = document.querySelector(".copy-container");
 let initialColors;
 
 //event listeners
 sliders.forEach((slider) => {
     slider.addEventListener("input", hslControls);
+});
+
+colorDivs.forEach((div, index) => {
+    div.addEventListener("change", () => {
+        updateTextUi(index);
+    });
+});
+
+currentHex.forEach((hex) => {
+    hex.addEventListener("click", () => {
+        copyToClipboard(hex);
+    });
+});
+
+popup.addEventListener("transitionend", () => {
+    const popupBox = popup.children[0];
+    popup.classList.remove("active");
+    popupBox.classList.remove("active");
 });
 
 //function
@@ -18,9 +37,13 @@ function generateHex() {
 }
 
 function randomColors() {
+    //initial colors
+    initialColors = [];
+
     colorDivs.forEach((div, index) => {
         const hexText = div.children[0];
         const randomColors = generateHex();
+        initialColors.push(chroma(randomColors).hex());
 
         //add to bacground
         div.style.backgroundColor = randomColors;
@@ -37,6 +60,8 @@ function randomColors() {
 
         colorizeSliders(color, hue, brightness, saturation);
     });
+    //reset inputs
+    resetInputs();
 }
 
 function checkTextContrast(color, text) {
@@ -78,7 +103,7 @@ function hslControls(e) {
     const brightness = sliders[1];
     const saturation = sliders[2];
 
-    const bgColor = colorDivs[index].querySelector("h2").innerText;
+    const bgColor = initialColors[index];
     console.log(bgColor);
 
     let color = chroma(bgColor)
@@ -87,6 +112,56 @@ function hslControls(e) {
         .set("hsl.h", hue.value);
 
     colorDivs[index].style.backgroundColor = color;
+    //colorixze slider/input
+    colorizeSliders(color, hue, brightness, saturation);
+}
+
+function updateTextUi(index) {
+    const activeDiv = colorDivs[index];
+    const color = chroma(activeDiv.style.backgroundColor);
+    const textHex = activeDiv.querySelector("h2");
+    const icons = activeDiv.querySelectorAll(".controls button");
+    textHex.innerText = color.hex();
+    //check contrast
+    checkTextContrast(color, textHex);
+    for (let icon of icons) {
+        checkTextContrast(color, icon);
+    }
+}
+
+function resetInputs() {
+    const sliders = document.querySelectorAll(".sliders input");
+    sliders.forEach((slider) => {
+        if (slider.name === "hue") {
+            const hueColor = initialColors[slider.getAttribute("data-hue")];
+            const hueValue = chroma(hueColor).hsl()[0];
+            slider.value = Math.floor(hueValue);
+        }
+        if (slider.name === "brightness") {
+            const brightColor =
+                initialColors[slider.getAttribute("data-bright")];
+            const brightValue = chroma(brightColor).hsl()[2];
+            slider.value = Math.floor(brightValue * 100) / 100;
+        }
+        if (slider.name === "saturation") {
+            const satColor = initialColors[slider.getAttribute("data-sat")];
+            const satValue = chroma(satColor).hsl()[1];
+            slider.value = Math.floor(satValue * 100) / 100;
+        }
+    });
+}
+
+function copyToClipboard(hex) {
+    const el = document.createElement("textarea");
+    el.value = hex.innerText;
+    document.body.appendChild(el);
+    el.select();
+    document.execCommand("copy");
+    document.body.removeChild(el);
+    //pop up animation
+    const popupBox = popup.children[0];
+    popup.classList.add("active");
+    popupBox.classList.add("active");
 }
 
 randomColors();
