@@ -5,7 +5,14 @@ const generateBtn = document.querySelector(".generate");
 const sliders = document.querySelectorAll('input[type="range"]');
 const currentHex = document.querySelectorAll(".color h2");
 const popup = document.querySelector(".copy-container");
+const adjustBtn = document.querySelectorAll(".adjust");
+const closeAdjust = document.querySelectorAll(".close-adjustment");
+const sliderContainers = document.querySelectorAll(".sliders");
+const lockBtn = document.querySelectorAll(".lock");
 let initialColors;
+
+//local storage
+let savedPalettes = [];
 
 //event listeners
 sliders.forEach((slider) => {
@@ -30,6 +37,31 @@ popup.addEventListener("transitionend", () => {
     popupBox.classList.remove("active");
 });
 
+adjustBtn.forEach((btn, index) => {
+    btn.addEventListener("click", () => {
+        openAdjustPanel(index);
+    });
+});
+
+closeAdjust.forEach((btn, index) => {
+    btn.addEventListener("click", () => {
+        closeAdjustPanel(index);
+    });
+});
+
+generateBtn.addEventListener("click", () => {
+    randomColors();
+});
+
+lockBtn.forEach((btn, index) => {
+    btn.addEventListener("click", (e) => {
+        btn.children[0].classList.toggle("fa-lock-open");
+
+        btn.children[0].classList.toggle("fa-lock");
+        colorDivs[index].classList.toggle("locked");
+    });
+});
+
 //function
 function generateHex() {
     const hexColor = chroma.random();
@@ -43,7 +75,12 @@ function randomColors() {
     colorDivs.forEach((div, index) => {
         const hexText = div.children[0];
         const randomColors = generateHex();
-        initialColors.push(chroma(randomColors).hex());
+        if (div.classList.contains("locked")) {
+            initialColors.push(hexText.innerText);
+            return;
+        } else {
+            initialColors.push(chroma(randomColors).hex());
+        }
 
         //add to bacground
         div.style.backgroundColor = randomColors;
@@ -62,6 +99,12 @@ function randomColors() {
     });
     //reset inputs
     resetInputs();
+    //check for btn contrast
+    adjustBtn.forEach((btn, index) => {
+        checkTextContrast(initialColors[index], btn);
+
+        checkTextContrast(initialColors[index], lockBtn[index]);
+    });
 }
 
 function checkTextContrast(color, text) {
@@ -162,6 +205,67 @@ function copyToClipboard(hex) {
     const popupBox = popup.children[0];
     popup.classList.add("active");
     popupBox.classList.add("active");
+}
+
+function openAdjustPanel(index) {
+    sliderContainers[index].classList.toggle("active");
+}
+function closeAdjustPanel(index) {
+    sliderContainers[index].classList.remove("active");
+}
+
+//Save to palette and local storage
+const saveBtn = document.querySelector(".save-panel");
+const submiteSave = document.querySelector(".submit-save");
+const closeSave = document.querySelector(".close-save");
+const saveContainer = document.querySelector(".save-container");
+const saveInput = document.querySelector(".save-name");
+
+saveBtn.addEventListener("click", openPalette);
+closeSave.addEventListener("click", closePalette);
+
+function openPalette(e) {
+    const popup = saveContainer.children[0];
+    saveContainer.classList.add("active");
+    popup.classList.add("active");
+}
+
+function closePalette(e) {
+    const popup = saveContainer.children[0];
+    saveContainer.classList.remove("active");
+    popup.classList.remove("active");
+}
+
+submiteSave.addEventListener("click", savePalette);
+
+function savePalette(e) {
+    saveContainer.classList.remove("active");
+    popup.classList.remove("active");
+    const name = saveInput.value;
+    console.log(saveInput);
+    const colors = [];
+    currentHex.forEach((hex) => {
+        colors.push(hex.innerText);
+    });
+    //Generate Object
+    let paletteNr = savedPalettes.length;
+    const paletteObj = { name, colors, nr: paletteNr };
+    savedPalettes.push(paletteObj);
+    console.log(savedPalettes);
+    //save to local storage
+    saveToLocal(paletteObj);
+    name = "";
+}
+
+function saveToLocal(paletteObj) {
+    let localPalettes;
+    if (localStorage.getItem("palettes") === null) {
+        localPalettes = [];
+    } else {
+        localPalettes = JSON.parse(localStorage.getItem("palettes"));
+    }
+    localPalettes.push(paletteObj);
+    localStorage.setItem("palettes", JSON.stringify(localPalettes));
 }
 
 randomColors();
