@@ -324,6 +324,52 @@ function closeLibrary() {
     popup.classList.remove("active");
 }
 
-function libraryInputUpdate() {}
+function getLocal() {
+    if (localStorage.getItem("palettes") === null) {
+        localPalettes = [];
+    } else {
+        const paletteObject = JSON.parse(localStorage.getItem("palettes"));
+        paletteObject.forEach((paletteObj) => {
+            //generate the palette for library
+            const palette = document.createElement("div");
+            palette.classList.add("custom-palette");
+            const title = document.createElement("h4");
+            title.innerText = paletteObj.name;
+            const preview = document.createElement("div");
+            preview.classList.add("small-preview");
 
+            paletteObj.colors.forEach((color) => {
+                const smallDiv = document.createElement("div");
+                preview.appendChild(smallDiv);
+                smallDiv.style.backgroundColor = color;
+            });
+            const paletteBtn = document.createElement("button");
+            paletteBtn.classList.add("pick-palette-btn");
+            paletteBtn.classList.add(paletteObj.nr);
+            paletteBtn.innerText = "Select";
+
+            //attach events to btn
+            paletteBtn.addEventListener("click", (e) => {
+                closeLibrary();
+                const paletteIndex = e.target.classList[1];
+                initialColors = [];
+                savedPalettes[paletteIndex].colors.forEach((color, index) => {
+                    initialColors.push(color);
+                    colorDivs[index].style.backgroundColor = color;
+                    const text = colorDivs[index].children[0];
+                    checkTextContrast(color, text);
+                    updateTextUi(index);
+                });
+                resetInputs();
+            });
+
+            //append to library
+            palette.appendChild(title);
+            palette.appendChild(preview);
+            palette.appendChild(paletteBtn);
+            libraryContainer.children[0].appendChild(palette);
+        });
+    }
+}
+getLocal();
 randomColors();
