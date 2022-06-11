@@ -251,6 +251,7 @@ function savePalette(e) {
     currentHex.forEach((hex) => {
         colors.push(hex.innerText);
     });
+
     //Generate Object
     let paletteNr = savedPalettes.length;
     const paletteObj = { name, colors, nr: paletteNr };
@@ -353,7 +354,7 @@ function getLocal() {
                 closeLibrary();
                 const paletteIndex = e.target.classList[1];
                 initialColors = [];
-                savedPalettes[paletteIndex].colors.forEach((color, index) => {
+                paletteObject[paletteIndex].colors.forEach((color, index) => {
                     initialColors.push(color);
                     colorDivs[index].style.backgroundColor = color;
                     const text = colorDivs[index].children[0];
