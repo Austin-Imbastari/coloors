@@ -192,3 +192,43 @@ input[type="range"] {
     color: #fff;
     cursor: pointer;
 }
+
+.library-popup {
+    min-width: 40%;
+    padding: 1rem;
+    justify-content: flex-start;
+    max-height: 50vh;
+    overflow-y: scroll;
+}
+
+.custom-palette {
+    display: flex;
+    align-items: center;
+    justify-content: space-evenly;
+    width: 100%;
+    padding: 2rem;
+}
+
+.small-preview {
+    display: flex;
+    flex: 1;
+}
+
+.custom-palette h4 {
+    flex: 1;
+}
+.small-preview div {
+    height: 5rem;
+    width: 100%;
+}
+
+.pick-palette-btn,
+.close-library {
+    margin: 1rem 1rem;
+    padding: 0.9rem;
+    border: none;
+    background-color: pink;
+    border-radius: 20%;
+    color: #fff;
+    cursor: pointer;
+}
